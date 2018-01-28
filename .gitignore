@@ -1,3 +1,9 @@
 \.idea
 tools/
 */out/
+libs/
+
+
+*.iml
+*.tmp
+*.log
