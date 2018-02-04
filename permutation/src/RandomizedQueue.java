@@ -52,6 +52,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
     // add the item
     public void enqueue(Item item) {
+        if (item == null) throw new IllegalArgumentException();
         if (front >= items.length) {
             resize(items.length * 2);
         }
@@ -74,6 +75,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
     // return a random item (but do not remove it)
     public Item sample() {
+        if (isEmpty()) throw new NoSuchElementException();
         int index = StdRandom.uniform(size);
         if (items[index] == null) {
             resize(size + 1);
