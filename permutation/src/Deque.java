@@ -2,6 +2,9 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 public class Deque<Item> implements Iterable<Item> {
+    private Node front;
+    private Node tail;
+    private int size;
 
     private class Node {
         Item item;
@@ -43,19 +46,16 @@ public class Deque<Item> implements Iterable<Item> {
         }
     }
 
-    private Node front;
-    private Node tail;
-    private int size;
-
     // construct an empty deque
     public Deque() {
-        tail = front = null;
+        front = null;
+        tail = null;
         size = 0;
     }
 
     // is the deque empty?
     public boolean isEmpty() {
-        return front == null && tail == null;
+        return front == null;
     }
 
     // return the number of items on the deque
@@ -66,9 +66,12 @@ public class Deque<Item> implements Iterable<Item> {
     // add the item to the front
     public void addFirst(Item item) {
         if (item == null) throw new IllegalArgumentException();
-        Node oldfront = front;
-        front = new Node(item, null, oldfront);
-        if (tail == null) {
+        Node newnode = new Node(item, null, front);
+        if (front != null) {
+            front.forward = newnode;
+            front = newnode;
+        } else {
+            front = newnode;
             tail = front;
         }
         ++size;
@@ -77,9 +80,12 @@ public class Deque<Item> implements Iterable<Item> {
     // add the item to the end
     public void addLast(Item item) {
         if (item == null) throw new IllegalArgumentException();
-        Node oldtail = tail;
-        tail = new Node(item, oldtail, null);
-        if (front == null) {
+        Node newnode = new Node(item, tail, null);
+        if (tail != null) {
+            tail.backward = newnode;
+            tail = tail.backward;
+        } else {
+            tail = newnode;
             front = tail;
         }
         ++size;
@@ -126,5 +132,63 @@ public class Deque<Item> implements Iterable<Item> {
 
     // unit testing (optional)
     public static void main(String[] args) {
+        Deque<Integer> testDeque = new Deque<>();
+        if (!testDeque.isEmpty()) {
+            System.out.println("FAIL: deque should be empty");
+        }
+        if (testDeque.size() != 0) {
+            System.out.println("FAIL: size should be 0");
+        }
+        testDeque.addFirst(1);
+        if (testDeque.removeLast() != 1) {
+            System.out.println("FAIL: last should be equal to first");
+        }
+
+        testDeque.addLast(2);
+        if (testDeque.removeFirst() != 2) {
+            System.out.println("FAIL: first should be equal to last");
+        }
+
+        testDeque.addLast(1);
+        testDeque.addLast(2);
+        testDeque.addLast(3);
+        testDeque.addLast(4);
+        testDeque.addLast(5);
+
+        if (testDeque.size() != 5) {
+            System.out.println("FAIL: size should be 5");
+        }
+
+        StringBuilder result = new StringBuilder("");
+        while (!testDeque.isEmpty()) {
+            result.append(testDeque.removeFirst());
+            result.append(" ");
+        }
+        if (!result.toString().equals("1 2 3 4 5 ")) {
+            System.out.println("FAIL: '" + result + "' should be '1 2 3 4 5 '");
+        }
+        if (testDeque.size() != 0) {
+            System.out.println("FAIL: final size should be 0: " + testDeque.size());
+        }
+
+        testDeque.addFirst(5);
+        testDeque.addFirst(4);
+        testDeque.addFirst(3);
+        testDeque.addFirst(2);
+        testDeque.addFirst(1);
+
+        Iterator<Integer> it = testDeque.iterator();
+        result = new StringBuilder("");
+        while (it.hasNext()) {
+            result.append(it.next());
+            result.append(" ");
+        }
+        if (!result.toString().equals("1 2 3 4 5 ")) {
+            System.out.println("FAIL iterator: '" + result + "' should be '1 2 3 4 5 '");
+        }
+        if (testDeque.size() != 5) {
+            System.out.println("FAIL iterator: final size should be 5: " + testDeque.size());
+        }
+        System.out.println("PASSED: all tests");
     }
 }
