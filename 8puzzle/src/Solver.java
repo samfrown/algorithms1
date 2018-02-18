@@ -1,22 +1,20 @@
 import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.LinkedStack;
 import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.StdOut;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 
 public final class Solver {
 
-    private final List<Board> solutionBoards;
-    private final MinPQ<SearchNode> minPq;
+    private final SearchNode lastSearchNode;
     private int moves;
-    private boolean solved;
+    private final boolean solved;
 
     private class SearchNode {
-        private Board board;
-        private int moves;
-        private SearchNode predecessor;
+        private final Board board;
+        private final int moves;
+        private final SearchNode predecessor;
 
         SearchNode(Board board, int moves, SearchNode predecessor) {
             this.board = board;
@@ -37,21 +35,35 @@ public final class Solver {
     // find a solution to the initial board (using the A* algorithm)
     public Solver(Board initial) {
         if (initial == null) throw new IllegalArgumentException();
-        minPq = new MinPQ<>(Comparator.comparing(SearchNode::priorityByHamming));
+        MinPQ<SearchNode> minPq = new MinPQ<>(Comparator.comparing(SearchNode::priorityByManhattan));
+        MinPQ<SearchNode> twinPq = new MinPQ<>(Comparator.comparing(SearchNode::priorityByManhattan));
         minPq.insert(new SearchNode(initial, 0, null));
-        solutionBoards = new ArrayList<>();
-        solutionBoards.add(initial);
+        twinPq.insert(new SearchNode(initial.twin(), 0, null));
 
         SearchNode currentMin = minPq.delMin();
+        SearchNode currentTwinMin = twinPq.delMin();
         while (!currentMin.board.isGoal()) {
-            moves++;
+            if (currentTwinMin.board.isGoal()) {
+                lastSearchNode = null;
+                solved = false;
+                return;
+            }
             for (Board neighbor : currentMin.board.neighbors()) {
                 if (currentMin.predecessor == null || !neighbor.equals(currentMin.predecessor.board)) {
                     minPq.insert(new SearchNode(neighbor, moves, currentMin));
                 }
             }
+            for (Board twinNeighbor : currentTwinMin.board.neighbors()) {
+                if (currentTwinMin.predecessor == null || !twinNeighbor.equals(currentTwinMin.predecessor.board)) {
+                    twinPq.insert(new SearchNode(twinNeighbor, moves, currentTwinMin));
+                }
+            }
             currentMin = minPq.delMin();
+            currentTwinMin = twinPq.delMin();
+            moves++;
         }
+        solved = true;
+        lastSearchNode = currentMin;
     }
 
     // is the initial board solvable?
@@ -62,12 +74,18 @@ public final class Solver {
 
     // min number of moves to solve initial board; -1 if unsolvable
     public int moves() {
-        return moves;
+        return solved ? lastSearchNode.moves : -1;
     }
 
 
     // sequence of boards in a shortest solution; null if unsolvable
     public Iterable<Board> solution() {
+        LinkedStack<Board> solutionBoards = new LinkedStack<>();
+        SearchNode current = lastSearchNode;
+        while (current != null) {
+            solutionBoards.push(current.board);
+            current = current.predecessor;
+        }
         return solutionBoards;
     }
 
