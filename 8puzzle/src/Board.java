@@ -59,7 +59,7 @@ public class Board {
             for (int j = 0; j < dimension; j++) {
                 int expected = i * dimension + j + 1;
                 int val = blocks[i][j];
-                if (val != 0 && val != expected ) {
+                if (val != 0 && val != expected) {
                     int iVal = val / dimension;
                     int jVal = val - dimension * iVal;
                     totalDistance += Math.abs(i - iVal) + Math.abs(j - jVal);

@@ -48,6 +48,7 @@ public final class Solver {
                 solved = false;
                 return;
             }
+            moves++;
             for (Board neighbor : currentMin.board.neighbors()) {
                 if (currentMin.predecessor == null || !neighbor.equals(currentMin.predecessor.board)) {
                     minPq.insert(new SearchNode(neighbor, moves, currentMin));
@@ -60,7 +61,6 @@ public final class Solver {
             }
             currentMin = minPq.delMin();
             currentTwinMin = twinPq.delMin();
-            moves++;
         }
         solved = true;
         lastSearchNode = currentMin;
