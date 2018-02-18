@@ -60,8 +60,8 @@ public class Board {
                 int expected = i * dimension + j + 1;
                 int val = blocks[i][j];
                 if (val != 0 && val != expected) {
-                    int iVal = val / dimension;
-                    int jVal = val - dimension * iVal;
+                    int iVal = (val - 1) / dimension;
+                    int jVal = val - dimension * iVal - 1;
                     totalDistance += Math.abs(i - iVal) + Math.abs(j - jVal);
                 }
             }
@@ -85,10 +85,10 @@ public class Board {
     // a board that is obtained by exchanging any pair of blocks
     public Board twin() {
         int[][] twinBlocks = copyBlocks();
-        while (true) {
-            int rand = StdRandom.uniform(dimension * dimension);
-            int r = rand / dimension;
-            int c = rand - dimension * r;
+        int rand = 1;
+        while (rand < dimension * dimension) {
+            int r = (rand - 1) / dimension;
+            int c = rand - dimension * r - 1;
             if (blocks[r][c] != 0) {
                 if (r < (dimension - 1) && blocks[r + 1][c] != 0) {
                     exch(twinBlocks, r, c, r + 1, c);
@@ -99,9 +99,11 @@ public class Board {
                 } else if (c > 0 && blocks[r][c - 1] != 0) {
                     exch(twinBlocks, r, c, r, c - 1);
                 }
-                return new Board(twinBlocks);
+                break;
             }
+            rand++;
         }
+        return new Board(twinBlocks);
     }
 
     // does this board equal y?
@@ -175,6 +177,18 @@ public class Board {
         if (!goalBoard.equals(new Board(goalBlocks))) {
             System.out.println("FAIL: board should be equal");
         }
+        int[][] blocks31 = {{1, 2, 3}, {0, 7, 6}, {5, 4, 8}};
+        Board b31 = new Board(blocks31);
+        if (b31.manhattan() != 7) {
+            System.out.println("FAIL: board manhattan number should be 7. Current: " + b31.manhattan());
+        }
+
+        int[][] blocks32 = {{0, 1, 3}, {4, 2, 5}, {7, 8, 6}};
+        Board b32 = new Board(blocks32);
+        if (b32.manhattan() != 4) {
+            System.out.println("FAIL: board manhattan number should be 4. Current: " + b32.manhattan());
+        }
+
         System.out.println("All tests PASSED");
     }
 
