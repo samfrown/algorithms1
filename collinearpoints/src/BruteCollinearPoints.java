@@ -3,7 +3,6 @@ import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdOut;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * Brute force. Write a program BruteCollinearPoints.java that examines 4 points at a time and checks
@@ -45,7 +44,7 @@ public class BruteCollinearPoints {
 
     private boolean isCollinear(double[] slopes) {
         for (int i = 1; i < slopes.length; i++) {
-            if (slopes[0] != slopes[i]) {
+            if (Double.compare(slopes[0], slopes[i]) != 0) {
                 return false;
             }
         }
@@ -60,13 +59,13 @@ public class BruteCollinearPoints {
 
     // the line segments
     public LineSegment[] segments() {
-        return segments.stream().toArray(LineSegment[]::new);
+        return segments.toArray(new LineSegment[0]);
     }
 
     public static void main(String[] args) {
         // read the n points from a file
         if (args.length <= 0) {
-            System.out.println("usage: java BruteColinearPoints <file>");
+            System.out.println("usage: java BruteCollinearPoints <file>");
         }
 
         In in = new In(args[0]);
