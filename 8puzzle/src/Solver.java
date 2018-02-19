@@ -15,19 +15,23 @@ public final class Solver {
         private final Board board;
         private final int moves;
         private final SearchNode predecessor;
+        private final int hamming;
+        private final int manhattan;
 
         SearchNode(Board board, int moves, SearchNode predecessor) {
             this.board = board;
             this.moves = moves;
             this.predecessor = predecessor;
+            this.hamming = board.hamming();
+            this.manhattan = board.manhattan();
         }
 
         int priorityByHamming() {
-            return board.hamming() + moves;
+            return hamming + moves;
         }
 
         int priorityByManhattan() {
-            return board.manhattan() + moves;
+            return manhattan + moves;
         }
 
     }
@@ -48,7 +52,7 @@ public final class Solver {
                 solved = false;
                 return;
             }
-            moves++;
+            moves = currentMin.moves + 1;
             for (Board neighbor : currentMin.board.neighbors()) {
                 if (currentMin.predecessor == null || !neighbor.equals(currentMin.predecessor.board)) {
                     minPq.insert(new SearchNode(neighbor, moves, currentMin));
@@ -80,6 +84,8 @@ public final class Solver {
 
     // sequence of boards in a shortest solution; null if unsolvable
     public Iterable<Board> solution() {
+        if ( lastSearchNode == null )
+            return null;
         LinkedStack<Board> solutionBoards = new LinkedStack<>();
         SearchNode current = lastSearchNode;
         while (current != null) {
