@@ -4,6 +4,7 @@ import edu.princeton.cs.algs4.StdDraw;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -110,20 +111,17 @@ public class KdTree {
     // all points that are inside the rectangle (or on the boundary)
     public Iterable<Point2D> range(RectHV rect) {
         if (rect == null) throw new IllegalArgumentException();
+        if(isEmpty()) throw new NoSuchElementException();
         List<Point2D> innerPoints = new ArrayList();
-        for (Point2D point : points) {
-            if (rect.contains(point)) {
-                innerPoints.add(point);
-            }
-        }
+
         return innerPoints;
     }
 
     // a nearest neighbor in the set to point p; null if the set is empty
     public Point2D nearest(Point2D p) {
         if (p == null) throw new IllegalArgumentException();
-        if(isEmpty()) return new
-        return root.;
+        if(isEmpty()) throw new NoSuchElementException();
+        return root.point;
     }
 
     // unit testing of the methods (optional)

@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -47,6 +48,7 @@ public class PointSET {
     // all points that are inside the rectangle (or on the boundary)
     public Iterable<Point2D> range(RectHV rect) {
         if (rect == null) throw new IllegalArgumentException();
+        if(isEmpty()) throw new NoSuchElementException();
         List<Point2D> innerPoints = new ArrayList();
         for (Point2D point : points) {
             if (rect.contains(point)) {
@@ -58,6 +60,8 @@ public class PointSET {
 
     // a nearest neighbor in the set to point p; null if the set is empty
     public Point2D nearest(Point2D p) {
+        if (p == null) throw new IllegalArgumentException();
+        if(isEmpty()) throw new NoSuchElementException();
         Point2D nearestPoint = null;
         double nearestDistance = Double.MAX_VALUE;
         for (Point2D point : points) {
