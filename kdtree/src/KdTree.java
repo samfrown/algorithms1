@@ -2,38 +2,31 @@ import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.StdDraw;
 
-import java.awt.*;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.TreeSet;
 
 public class KdTree {
 
     private class Node {
-        Point2D point;
+        final Point2D point;
+        final int level;
+        final RectHV rect;
+        int count;
         Node left;
         Node right;
-        int level;
-        int count;
-        RectHV rect;
 
         Node(Point2D point, int level, RectHV rect) {
-            this(point, level, rect, null, null);
-        }
-
-        Node(Point2D point, int level, RectHV rect, Node left, Node right) {
             this.point = point;
             this.level = level;
-            this.left = left;
-            this.right = right;
+            this.left = null;
+            this.right = null;
             this.count = 1;
             this.rect = rect;
         }
 
         boolean xDivided() {
-            return level%2 == 0;
+            return level % 2 == 0;
         }
 
         boolean isBiggerThan(Point2D point) {
@@ -146,16 +139,45 @@ public class KdTree {
     public Iterable<Point2D> range(RectHV rect) {
         if (rect == null) throw new IllegalArgumentException();
         if (isEmpty()) throw new NoSuchElementException();
-        List<Point2D> innerPoints = new ArrayList();
-
+        List<Point2D> innerPoints = new LinkedList<>();
+        range(root, rect, innerPoints);
         return innerPoints;
+    }
+
+    private void range(Node x, RectHV rect, List<Point2D> points) {
+        if (rect.contains(x.point))
+            points.add(x.point);
+        if (x.left != null && x.left.rect.intersects(rect)) range(x.left, rect, points);
+        if (x.right != null && x.right.rect.intersects(rect)) range(x.right, rect, points);
     }
 
     // a nearest neighbor in the set to point p; null if the set is empty
     public Point2D nearest(Point2D p) {
         if (p == null) throw new IllegalArgumentException();
         if (isEmpty()) throw new NoSuchElementException();
-        return root.point;
+        return nearest(root, p, root.point);
+    }
+
+    private Point2D nearest(Node x, Point2D p, Point2D closest) {
+        Point2D newClosest;
+        if (p.distanceTo(closest) > p.distanceTo(x.point)) {
+            newClosest = new Point2D(x.point.x(), x.point.y());
+        } else {
+            newClosest = closest;
+        }
+        Node first = x.left;
+        Node second = x.right;
+        if (x.isBiggerThan(newClosest)) {
+            first = x.right;
+            second = x.left;
+        }
+        if (first != null && first.rect.distanceTo(p) < p.distanceTo(newClosest)) {
+            newClosest = nearest(first, p, newClosest);
+        }
+        if (second != null && second.rect.distanceTo(p) < p.distanceTo(newClosest)) {
+            newClosest = nearest(second, p, newClosest);
+        }
+        return newClosest;
     }
 
     // unit testing of the methods (optional)

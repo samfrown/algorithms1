@@ -9,7 +9,7 @@ import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.StdDraw;
 
 public class PointSET {
-    Set<Point2D> points;
+    private final Set<Point2D> points;
 
     // construct an empty set of points
     public PointSET() {
@@ -49,7 +49,7 @@ public class PointSET {
     public Iterable<Point2D> range(RectHV rect) {
         if (rect == null) throw new IllegalArgumentException();
         if(isEmpty()) throw new NoSuchElementException();
-        List<Point2D> innerPoints = new ArrayList();
+        List<Point2D> innerPoints = new ArrayList<>();
         for (Point2D point : points) {
             if (rect.contains(point)) {
                 innerPoints.add(point);
