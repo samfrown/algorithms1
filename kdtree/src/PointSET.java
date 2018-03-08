@@ -48,11 +48,12 @@ public class PointSET {
     // all points that are inside the rectangle (or on the boundary)
     public Iterable<Point2D> range(RectHV rect) {
         if (rect == null) throw new IllegalArgumentException();
-        if(isEmpty()) throw new NoSuchElementException();
         List<Point2D> innerPoints = new ArrayList<>();
-        for (Point2D point : points) {
-            if (rect.contains(point)) {
-                innerPoints.add(point);
+        if (!isEmpty()) {
+            for (Point2D point : points) {
+                if (rect.contains(point)) {
+                    innerPoints.add(point);
+                }
             }
         }
         return innerPoints;
@@ -61,9 +62,9 @@ public class PointSET {
     // a nearest neighbor in the set to point p; null if the set is empty
     public Point2D nearest(Point2D p) {
         if (p == null) throw new IllegalArgumentException();
-        if(isEmpty()) throw new NoSuchElementException();
+        if (isEmpty()) return null;
         Point2D nearestPoint = null;
-        double nearestDistance = Double.MAX_VALUE;
+        double nearestDistance = Double.POSITIVE_INFINITY;
         for (Point2D point : points) {
             double distance = p.distanceTo(point);
             if (Math.abs(distance) < nearestDistance) {

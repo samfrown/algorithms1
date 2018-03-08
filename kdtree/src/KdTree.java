@@ -29,11 +29,11 @@ public class KdTree {
             return level % 2 == 0;
         }
 
-        boolean isBiggerThan(Point2D point) {
+        boolean isBiggerThan(Point2D p) {
             if (xDivided()) {
-                return point.x() < this.point.x();
+                return p.x() < this.point.x();
             } else {
-                return point.y() < this.point.y();
+                return p.y() < this.point.y();
             }
         }
 
@@ -102,7 +102,7 @@ public class KdTree {
             } else {
                 x.right = put(x.right, point, x.level + 1, x.getNextRightRect());
             }
-            ++x.count;
+            x.count = (x.left != null ? x.left.count : 0) + (x.right != null ? x.right.count : 0) + 1;
         }
         return x;
     }
@@ -138,9 +138,9 @@ public class KdTree {
     // all points that are inside the rectangle (or on the boundary)
     public Iterable<Point2D> range(RectHV rect) {
         if (rect == null) throw new IllegalArgumentException();
-        if (isEmpty()) throw new NoSuchElementException();
         List<Point2D> innerPoints = new LinkedList<>();
-        range(root, rect, innerPoints);
+        if (!isEmpty())
+            range(root, rect, innerPoints);
         return innerPoints;
     }
 
@@ -154,27 +154,27 @@ public class KdTree {
     // a nearest neighbor in the set to point p; null if the set is empty
     public Point2D nearest(Point2D p) {
         if (p == null) throw new IllegalArgumentException();
-        if (isEmpty()) throw new NoSuchElementException();
+        if (isEmpty()) return null;
         return nearest(root, p, root.point);
     }
 
     private Point2D nearest(Node x, Point2D p, Point2D closest) {
         Point2D newClosest;
-        if (p.distanceTo(closest) > p.distanceTo(x.point)) {
+        if (p.distanceSquaredTo(closest) > p.distanceSquaredTo(x.point)) {
             newClosest = new Point2D(x.point.x(), x.point.y());
         } else {
             newClosest = closest;
         }
         Node first = x.left;
         Node second = x.right;
-        if (x.isBiggerThan(newClosest)) {
+        if (x.isBiggerThan(p)) {
             first = x.right;
             second = x.left;
         }
-        if (first != null && first.rect.distanceTo(p) < p.distanceTo(newClosest)) {
+        if (first != null && first.rect.distanceSquaredTo(p) < p.distanceSquaredTo(newClosest)) {
             newClosest = nearest(first, p, newClosest);
         }
-        if (second != null && second.rect.distanceTo(p) < p.distanceTo(newClosest)) {
+        if (second != null && second.rect.distanceSquaredTo(p) < p.distanceSquaredTo(newClosest)) {
             newClosest = nearest(second, p, newClosest);
         }
         return newClosest;
@@ -188,6 +188,7 @@ public class KdTree {
         Point2D point2 = new Point2D(0.2, 0.5);
         Point2D point3 = new Point2D(0.7, 0.5);
         Point2D point4 = new Point2D(0.25, 0.4);
+        Point2D point5 = new Point2D(0.25, 0.4);
 
         pointSet.insert(point1);
 
@@ -200,6 +201,17 @@ public class KdTree {
         if ((!pointSet.contains(point3))) throw new AssertionError("point3 must be in set");
         pointSet.insert(point4);
         if ((!pointSet.contains(point4))) throw new AssertionError("point4 must be in set");
+
+        if ((pointSet.size() != 4)) throw new AssertionError("size should be 4: " + pointSet.size());
+
+        pointSet.insert(point5);
+
+        if ((pointSet.size() != 4)) throw new AssertionError("size should be 4: " + pointSet.size());
+
+        pointSet.insert(point5);
+
+        if ((pointSet.size() != 4)) throw new AssertionError("size should be 4: " + pointSet.size());
+
 
         pointSet.draw();
         StdDraw.show();
