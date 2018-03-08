@@ -2,6 +2,7 @@ import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.StdDraw;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -16,21 +17,23 @@ public class KdTree {
         Node right;
         int level;
         int count;
+        RectHV rect;
 
-        Node(Point2D point, int level) {
-            this(point, level, null, null);
+        Node(Point2D point, int level, RectHV rect) {
+            this(point, level, rect, null, null);
         }
 
-        Node(Point2D point, int level, Node left, Node right) {
+        Node(Point2D point, int level, RectHV rect, Node left, Node right) {
             this.point = point;
             this.level = level;
             this.left = left;
             this.right = right;
             this.count = 1;
+            this.rect = rect;
         }
 
         boolean xDivided() {
-            return level / 2 == 0;
+            return level%2 == 0;
         }
 
         boolean isBiggerThan(Point2D point) {
@@ -39,6 +42,37 @@ public class KdTree {
             } else {
                 return point.y() < this.point.y();
             }
+        }
+
+        RectHV getNextRightRect() {
+            if (xDivided()) {
+                return new RectHV(point.x(), rect.ymin(), rect.xmax(), rect.ymax());
+            } else {
+                return new RectHV(rect.xmin(), point.y(), rect.xmax(), rect.ymax());
+            }
+        }
+
+        RectHV getNextLeftRect() {
+            if (xDivided()) {
+                return new RectHV(rect.xmin(), rect.ymin(), point.x(), rect.ymax());
+            } else {
+                return new RectHV(rect.xmin(), rect.ymin(), rect.xmax(), point.y());
+            }
+        }
+
+        void draw() {
+            if (level == 0) {
+                StdDraw.setPenColor(StdDraw.BLACK);
+            } else if (xDivided()) {
+                StdDraw.setPenColor(StdDraw.BLUE);
+            } else {
+                StdDraw.setPenColor(StdDraw.RED);
+            }
+            StdDraw.setPenRadius();
+            rect.draw();
+            StdDraw.setPenColor(StdDraw.BLACK);
+            StdDraw.setPenRadius(0.01);
+            point.draw();
         }
     }
 
@@ -63,17 +97,17 @@ public class KdTree {
     public void insert(Point2D p) {
         if (p == null) throw new IllegalArgumentException();
 
-        root = put(root, p, 0);
+        root = put(root, p, 0, new RectHV(0, 0, 1, 1));
     }
 
-    private Node put(Node x, Point2D point, int level) {
+    private Node put(Node x, Point2D point, int level, RectHV rectHV) {
         if (x == null)
-            return new Node(point, level);
+            return new Node(point, level, rectHV);
         if (!x.point.equals(point)) {
             if (x.isBiggerThan(point)) {
-                x.left = put(x.left, point, x.level + 1);
+                x.left = put(x.left, point, x.level + 1, x.getNextLeftRect());
             } else {
-                x.right = put(x.right, point, x.level + 1);
+                x.right = put(x.right, point, x.level + 1, x.getNextRightRect());
             }
             ++x.count;
         }
@@ -98,7 +132,6 @@ public class KdTree {
     // draw all points to standard draw
     public void draw() {
         if (isEmpty()) return;
-
         draw(root);
     }
 
@@ -106,12 +139,13 @@ public class KdTree {
     private void draw(Node x) {
         if (x.left != null) draw(x.left);
         if (x.right != null) draw(x.right);
+        x.draw();
     }
 
     // all points that are inside the rectangle (or on the boundary)
     public Iterable<Point2D> range(RectHV rect) {
         if (rect == null) throw new IllegalArgumentException();
-        if(isEmpty()) throw new NoSuchElementException();
+        if (isEmpty()) throw new NoSuchElementException();
         List<Point2D> innerPoints = new ArrayList();
 
         return innerPoints;
@@ -120,7 +154,7 @@ public class KdTree {
     // a nearest neighbor in the set to point p; null if the set is empty
     public Point2D nearest(Point2D p) {
         if (p == null) throw new IllegalArgumentException();
-        if(isEmpty()) throw new NoSuchElementException();
+        if (isEmpty()) throw new NoSuchElementException();
         return root.point;
     }
 
@@ -128,9 +162,23 @@ public class KdTree {
     public static void main(String[] args) {
         KdTree pointSet = new KdTree();
         // draw the points
-        StdDraw.enableDoubleBuffering();
-        StdDraw.setXscale(0, 32768);
-        StdDraw.setYscale(0, 32768);
+        Point2D point1 = new Point2D(0.5, 0.5);
+        Point2D point2 = new Point2D(0.2, 0.5);
+        Point2D point3 = new Point2D(0.7, 0.5);
+        Point2D point4 = new Point2D(0.25, 0.4);
+
+        pointSet.insert(point1);
+
+        if ((!pointSet.contains(point1))) throw new AssertionError("point1 must be in set");
+
+        pointSet.insert(point2);
+        if ((!pointSet.contains(point2))) throw new AssertionError("point2 must be in set");
+
+        pointSet.insert(point3);
+        if ((!pointSet.contains(point3))) throw new AssertionError("point3 must be in set");
+        pointSet.insert(point4);
+        if ((!pointSet.contains(point4))) throw new AssertionError("point4 must be in set");
+
         pointSet.draw();
         StdDraw.show();
     }
