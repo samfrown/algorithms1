@@ -21,20 +21,25 @@ public class FastCollinearPoints {
         if (points == null) throw new IllegalArgumentException();
         Point[] sortedPoints = Arrays.copyOf(points, points.length);
         List<LineSegment> allSegments = new ArrayList<>();
-        Point prevPoint = null;
-        int k = 0;
-        while (k < points.length) {
-            Point point = sortedPoints[k++];
-            if (prevPoint != null && prevPoint.compareTo(point) == 0)
-                throw new IllegalArgumentException("Repeated point found: " + point);
-            prevPoint = point;
+
+        /*
+            Think of p as the origin.
+            For each other point q, determine the slope it makes with p.
+            Sort the points according to the slopes they makes with p.
+            Check if any 3 (or more) adjacent points in the sorted order have equal slopes with respect to p. If so, these points, together with p, are collinear.
+         */
+        for (Point point : points) {
+            //if (prevPoint != null && prevPoint.compareTo(point) == 0)
+            //    throw new IllegalArgumentException("Repeated point found: " + point);
+            //prevPoint = point;
             Arrays.sort(sortedPoints, point.slopeOrder());
             Point min = point;
             Point max = point;
             int count = 0;
             double slope = Double.NEGATIVE_INFINITY;
-            for (Point point1 : sortedPoints) {
-                if (point.compareTo(point1) == 0) continue;
+            for (int i = 1; i < sortedPoints.length; i++) {
+                Point point1 = sortedPoints[i];
+                if (point.compareTo(point1) == 0) throw new IllegalArgumentException("Repeated point found: " + point1);
                 double currSlope = point.slopeTo(point1);
                 if (Double.compare(currSlope, slope) == 0) {
                     count++;
@@ -47,11 +52,14 @@ public class FastCollinearPoints {
                     if (count >= 3) {
                         allSegments.add(new LineSegment(min, max));
                     }
-                    count = 0;
+                    count = 1;
                     slope = currSlope;
                     min = point;
                     max = point;
                 }
+            }
+            if (count >= 3) {
+                allSegments.add(new LineSegment(min, max));
             }
         }
         segments = allSegments;
