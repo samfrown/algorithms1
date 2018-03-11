@@ -4,6 +4,7 @@ import edu.princeton.cs.algs4.StdOut;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Fast. Write a program FastCollinearPoints.java that examines 4 points at a time and checks
@@ -13,13 +14,13 @@ import java.util.Arrays;
  */
 public class FastCollinearPoints {
 
-    private final ArrayList<LineSegment> segments;
+    private final List<LineSegment> segments;
 
     // finds all line segments containing 4 points
     public FastCollinearPoints(Point[] points) {
         if (points == null) throw new IllegalArgumentException();
         Point[] sortedPoints = Arrays.copyOf(points, points.length);
-        segments = new ArrayList<>();
+        List<LineSegment> allSegments = new ArrayList<>();
         Point prevPoint = null;
         int k = 0;
         while (k < points.length) {
@@ -44,7 +45,7 @@ public class FastCollinearPoints {
                     }
                 } else {
                     if (count >= 3) {
-                        segments.add(new LineSegment(min, max));
+                        allSegments.add(new LineSegment(min, max));
                     }
                     count = 0;
                     slope = currSlope;
@@ -53,16 +54,7 @@ public class FastCollinearPoints {
                 }
             }
         }
-    }
-
-    // the number of line segments
-    public int numberOfSegments() {
-        return segments.size();
-    }
-
-    // the line segments
-    public LineSegment[] segments() {
-        return segments.toArray(new LineSegment[0]);
+        segments = allSegments;
     }
 
     public static void main(String[] args) {
@@ -93,5 +85,15 @@ public class FastCollinearPoints {
             segment.draw();
         }
         StdDraw.show();
+    }
+
+    // the number of line segments
+    public int numberOfSegments() {
+        return segments.size();
+    }
+
+    // the line segments
+    public LineSegment[] segments() {
+        return segments.toArray(new LineSegment[0]);
     }
 }

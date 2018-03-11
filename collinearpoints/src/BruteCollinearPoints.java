@@ -3,6 +3,8 @@ import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdOut;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Brute force. Write a program BruteCollinearPoints.java that examines 4 points at a time and checks
@@ -11,55 +13,35 @@ import java.util.ArrayList;
  * between p and r, and between p and s are all equal.
  */
 public class BruteCollinearPoints {
-    private final ArrayList<LineSegment> segments;
+    private final List<LineSegment> segments;
 
     // finds all line segments containing 4 points
     public BruteCollinearPoints(Point[] points) {
         if (points == null) throw new IllegalArgumentException();
-        segments = new ArrayList<>();
-        for (int i = 0; i < points.length - 3; i++) {
-            Point p = points[i];
-            Point min = p;
-            Point max = p;
-            double[] slopes = new double[3];
-            for (int j = 0; j < 3; j++) {
-                int next = i + j + 1;
-                if (points[next] == null) throw new IllegalArgumentException("Point " + next + " is null");
-                if (points[next].compareTo(p) == 0) {
-                    throw new IllegalArgumentException("Repeated point found: " + points[next]);
+        List<LineSegment> allSegments = new ArrayList<>();
+        for (int i1 = 0; i1 < points.length; i1++) {
+            for (int i2 = i1 + 1; i2 < points.length; i2++) {
+                for (int i3 = i2 + 1; i3 < points.length; i3++) {
+                    for (int i4 = i3 + 1; i4 < points.length; i4++) {
+                        Point[] qvartet = {points[i1], points[i2], points[i3], points[i4]};
+                        Arrays.sort(qvartet);
+                        double[] slopes = new double[3];
+                        Point p0 = qvartet[0];
+                        for (int j = 0; j < 3; j++) {
+                            slopes[j] = p0.slopeTo(qvartet[j + 1]);
+                            if (slopes[j] == Double.NEGATIVE_INFINITY) {
+                                throw new IllegalArgumentException("Repeated point found: " + qvartet[j + 1]);
+                            }
+                        }
+                        if (isCollinear(slopes)) {
+                            allSegments.add(new LineSegment(qvartet[0], qvartet[qvartet.length - 1]));
+                        }
+                    }
                 }
-                slopes[j] = p.slopeTo(points[next]);
-                if (points[next].compareTo(min) < 0) {
-                    min = points[next];
-                } else if (points[next].compareTo(max) > 0) {
-                    max = points[next];
-                }
-            }
-
-            if (isCollinear(slopes)) {
-                segments.add(new LineSegment(min, max));
             }
         }
-    }
 
-    private boolean isCollinear(double[] slopes) {
-        for (int i = 1; i < slopes.length; i++) {
-            if (Double.compare(slopes[0], slopes[i]) != 0) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-
-    // the number of line segments
-    public int numberOfSegments() {
-        return segments.size();
-    }
-
-    // the line segments
-    public LineSegment[] segments() {
-        return segments.toArray(new LineSegment[0]);
+        segments = allSegments;
     }
 
     public static void main(String[] args) {
@@ -93,5 +75,25 @@ public class BruteCollinearPoints {
             segment.draw();
         }
         StdDraw.show();
+    }
+
+    private boolean isCollinear(double[] slopes) {
+        for (int i = 1; i < slopes.length; i++) {
+            if (Double.compare(slopes[0], slopes[i]) != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // the number of line segments
+    public int numberOfSegments() {
+        return segments.size();
+    }
+
+    // the line segments
+    public LineSegment[] segments() {
+
+        return segments.toArray(new LineSegment[0]);
     }
 }
